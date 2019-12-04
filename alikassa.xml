@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<extension version="2.5" type="plugin" method="install" group="vmpayment">
+    <name>VM-Alikassa</name>
+    <creationDate>November 2019</creationDate>
+    <author>Billletsdothat</author>
+    <authorUrl>https://kwork.ru/user/billletsdothat</authorUrl>
+    <copyright>Copyright (C) 2019 Billletsdothat</copyright>
+    <license></license>
+    <version>1.2</version>
+    <description>Alikassa</description>
+	
+	<languages>		
+		<language tag="ru-RU">language/ru-RU/ru-RU.plg_vmpayment_alikassa.ini</language>
+		<language tag="en-GB">language/en-GB/en-GB.plg_vmpayment_alikassa.ini</language>
+    </languages>
+	<files>
+		<filename>alikassa.xml</filename>
+		<filename plugin="alikassa">alikassa.php</filename>
+	</files>
+	
+    <vmconfig>
+        <fields name="params" >          		
+			<fieldset name="payment" addfieldpath="/administrator/components/com_virtuemart/fields">	
+			
+				<field name="merchant_uuid" type="text" size="100" label="ALIKASSA_MERCHANT_UUID" description="ALIKASSA_MERCHANT_UUID_DESC"/>
+				
+				<field name="secret_key" type="text" size="100" label="ALIKASSA_SECRET_KEY" description="ALIKASSA_SECRET_KEY_DESC"/>
+				
+				<field name="totalBalance" type="text" size="100" label="ALIKASSA_TOTAL_BALANCE" description="ALIKASSA_TOTAL_BALANCE_DESC" disabled="true"/>
+
+				<field name="test_mode" type="radio" default="1" label="ALIKASSA_TEST_MODE"  description="ALIKASSA_TEST_MODE_DESC" >
+                    <option value="0">ALIKASSA_TEST_MODE_ON</option>
+                    <option value="1">ALIKASSA_TEST_MODE_OFF</option>
+                </field>
+				
+				<field name="use_sign" type="radio" default="1" label="ALIKASSA_USE_SIGN"  description="ALIKASSA_USE_SIGN_DESC" >
+                    <option value="0">ALIKASSA_SIGN_MODE_ON</option>
+                    <option value="1">ALIKASSA_SIGN_MODE_OFF</option>
+                </field>
+				
+				<field name="commissionType" type="radio" default="1" label="ALIKASSA_COMISSION_TYPE"  description="ALIKASSA_COMISSION_TYPE_DESC">
+                    <option value="customer">ALIKASSA_COMISSION_TYPE_CUSTOMER</option>
+                    <option value="merchant">ALIKASSA_COMISSION_TYPE_MERCHANT</option>
+					<option value="split">ALIKASSA_COMISSION_TYPE_SPLIT</option>
+                </field>
+
+				<field name="hash_alg" type="list" default="md5" label="ALIKASSA_HASH_TYPE"  description="ALIKASSA_HASH_TYPE_DESC">
+                    <option value="sha256">sha256</option>
+                    <option value="md5">md5</option>
+                </field>	
+
+				<field type="vmorderstate" name="status_success" scope="com_virtuemart" default="C" label="ALIKASSA_STATUS_SUCCESS" description="ALIKASSA_STATUS_SUCCESS_DESC" />
+				<field type="vmorderstate" name="status_canceled" scope="com_virtuemart" default="X" label="ALIKASSA_STATUS_FAILED" description="ALIKASSA_STATUS_FAILED_DESC" />
+				<field type="vmorderstate" name="status_pending" scope="com_virtuemart" default="P" label="ALIKASSA_STATUS_PENDING" description="ALIKASSA_STATUS_PENDING_DESC" />
+			</fieldset>
+
+        </fields>
+    </vmconfig>
+
+</extension>
