@@ -52,6 +52,9 @@ class plgVmPaymentAlikassa extends vmPSPlugin
         if (!$this->selectedThisElement($method->payment_element)) {
             return false;
         }
+
+        include 'AliKassa.class.php';
+        $aliAPI = new \AliKassa($method->merchant_uuid, $method->secret_key, $method->hash_alg);
         
         $lang     = JFactory::getLanguage();
         $filename = 'com_virtuemart';
@@ -82,7 +85,7 @@ class plgVmPaymentAlikassa extends vmPSPlugin
         
         $desc = 'Оплата заказа №'.$order['details']['BT']->order_number;
 
-        $action_url = "https://sci.alikassa.com/payment"; 
+        $action_url = $api->url.'/payment'; 
         $this->_virtuemart_paymentmethod_id      = $order['details']['BT']->virtuemart_paymentmethod_id;
         $dbValues['payment_name']                = $this->renderPluginName($method);
         $dbValues['order_number']                = $order['details']['BT']->order_number;
@@ -105,11 +108,7 @@ class plgVmPaymentAlikassa extends vmPSPlugin
 			'urlFail' => $fail_url
         );
 
-        ksort($params, SORT_STRING);
-        array_push($params, $method->secret_key);
-        $signString = implode(':', $params);
-
-        $signature = base64_encode(hash($method->hash_alg, $signString, true));
+        $signature = $aliAPI->sign($params, $method->secret_key, $method->hash_alg);
 
 		$html = '<form action='.$action_url.' method="POST"  name="vm_alikassa_form" id="akform">
 		            <input type="hidden" value="'.$amount.'" name="amount">
@@ -126,13 +125,9 @@ class plgVmPaymentAlikassa extends vmPSPlugin
 				
 		$currentValueTotalBalance = $method->totalBalance;
 		
-		include 'AliKassa.class.php';
-		
 		$q = 'SELECT `payment_params` FROM `#__virtuemart_paymentmethods` WHERE `virtuemart_paymentmethod_id`="' . $order['details']['BT']->virtuemart_paymentmethod_id . '" ';
         $db =& JFactory::getDBO();
         $db->setQuery($q);
-		
-		$aliAPI = new \AliKassa($method->merchant_uuid, $method->secret_key, $method->hash_alg);
 		
 		$balance = $aliAPI->site()['return']['totalBalance'];
 		
@@ -177,24 +172,12 @@ class plgVmPaymentAlikassa extends vmPSPlugin
             $params = array();
             parse_str($_POST['form'], $params);
 			
-             $render->sign = $this->AkSignFormation($params, $method->hash_alg, $method->secret_key);
+            include 'AliKassa.class.php';
+            $aliAPI = new \AliKassa($method->merchant_uuid, $method->secret_key, $method->hash_alg);
+
+            $render->sign = $aliAPI->sign($params, $method->hash_alg, $method->secret_key);
         }
 
-        public function AkSignFormation($data, $hash_alg, $secret_key){
-            if (!empty($data['sign'])) unset($data['sign']);
-
-            $dataSet = array();
-            foreach ($data as $key => $value) {
-                $dataSet[$key] = $value;
-            }
-
-            ksort($dataSet, SORT_STRING);
-            array_push($dataSet, $secret_key);
-            $arg = implode(':', $dataSet);
-            $ak_sign = base64_encode(hash($hash_alg, $arg, true));
-
-            return $ak_sign;
-        }
     
     function plgVmOnShowOrderBEPayment($virtuemart_order_id, $virtuemart_payment_id)
     {
@@ -374,17 +357,5 @@ class plgVmPaymentAlikassa extends vmPSPlugin
         file_put_contents($file, PHP_EOL . $content, FILE_APPEND);
         fclose($doc);
        
-    }
- 	function checkIP(){
-	    $ip_stack = array(
-	        'ip_begin'=>'151.80.190.97',
-	        'ip_end'=>'151.80.190.104'
-	    );
-
-	    if(ip2long($_SERVER['REMOTE_ADDR'])<ip2long($ip_stack['ip_begin']) || ip2long($_SERVER['REMOTE_ADDR'])>ip2long($ip_stack['ip_end'])){
-	        $this->wrlog('REQUEST IP'.$_SERVER['REMOTE_ADDR'].'doesnt match');
-	        die('Ты мошенник! Пшел вон отсюда!');
-	    }
-	    return true;
     }
 }
